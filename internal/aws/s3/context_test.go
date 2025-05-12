@@ -20,21 +20,22 @@ func (m *mockS3Client) GetObject(input *s3.GetObjectInput) (*s3.GetObjectOutput,
 }
 
 var (
-	mockS3 = new(mockS3Client)
-	ctx    = &S3CloudContext{
-		svc:    mockS3,
-		bucket: "test-bucket",
-		key:    "test-file.json",
-	}
+	mockS3 *mockS3Client
+	ctx    *S3CloudContext
 )
 
-func loadDefaultVariables() {
+func loadDefaultVariables(filename string) {
 	mockS3 = new(mockS3Client)
+	ctx = &S3CloudContext{
+		svc:    mockS3,
+		bucket: "test-bucket",
+		key:    filename,
+	}
 }
 
 func TestS3CloudContext_GetValue(t *testing.T) {
 	t.Run("Get JSON object", func(t *testing.T) {
-		loadDefaultVariables()
+		loadDefaultVariables("test-file.json")
 
 		// Preparar mock para S3 com arquivo JSON
 		jsonContent := `{"name": "test", "value": 123}`
@@ -55,15 +56,14 @@ func TestS3CloudContext_GetValue(t *testing.T) {
 	})
 
 	t.Run("Get YAML object", func(t *testing.T) {
-		loadDefaultVariables()
+		loadDefaultVariables("test-file.yaml")
 
 		// Preparar mock para S3 com arquivo YAML
-		yamlContent := `
-		name: test
-		value: 123
-		list:
-		- item1
-		- item2`
+		yamlContent := `name: test
+value: 123
+list:
+  - item1
+  - item2`
 
 		mockS3.On("GetObject", mock.Anything).Return(&s3.GetObjectOutput{
 			Body: io.NopCloser(bytes.NewReader([]byte(yamlContent))),
@@ -82,13 +82,12 @@ func TestS3CloudContext_GetValue(t *testing.T) {
 	})
 
 	t.Run("Get CSV object", func(t *testing.T) {
-		loadDefaultVariables()
+		loadDefaultVariables("test-file.csv")
 
 		// Preparar mock para S3 com arquivo CSV
-		csvContent := `
-		id,name,age
-		1,Alice,30
-		2,Bob,25`
+		csvContent := `id,name,age
+1,Alice,30
+2,Bob,25`
 
 		mockS3.On("GetObject", mock.Anything).Return(&s3.GetObjectOutput{
 			Body: io.NopCloser(bytes.NewReader([]byte(csvContent))),
@@ -105,12 +104,12 @@ func TestS3CloudContext_GetValue(t *testing.T) {
 		assert.Len(t, csvResult, 2)
 		assert.Equal(t, "Alice", csvResult[0]["name"])
 		assert.Equal(t, "30", csvResult[0]["age"])
-		assert.Equal(t, "Bob", csvResult[0]["name"])
-		assert.Equal(t, "25", csvResult[0]["age"])
+		assert.Equal(t, "Bob", csvResult[1]["name"])
+		assert.Equal(t, "25", csvResult[1]["age"])
 	})
 
 	t.Run("Get Text object", func(t *testing.T) {
-		loadDefaultVariables()
+		loadDefaultVariables("test-file.txt")
 
 		// Preparar mock para S3 com arquivo de texto
 		textContent := "This is a plain text file."

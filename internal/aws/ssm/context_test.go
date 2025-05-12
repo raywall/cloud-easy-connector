@@ -20,16 +20,17 @@ func (m *mockSSMClient) GetParameter(input *ssm.GetParameterInput) (*ssm.GetPara
 }
 
 var (
-	mockSSM = new(mockSSMClient)
-	ctx     = &SSMCloudContext{
-		svc:            mockSSM,
-		paramName:      "/test/param",
-		withDecryption: true,
-	}
+	mockSSM *mockSSMClient
+	ctx     *SSMCloudContext
 )
 
 func loadDefaultVariables() {
 	mockSSM = new(mockSSMClient)
+	ctx = &SSMCloudContext{
+		svc:            mockSSM,
+		paramName:      "/test/param",
+		withDecryption: true,
+	}
 }
 
 func TestSSMCloudContext_GetValue(t *testing.T) {

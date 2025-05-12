@@ -62,8 +62,7 @@ func (ctx *SecretsManagerCloudContext) GetValue() (interface{}, error) {
 		if err := json.Unmarshal([]byte(secretValue), &jsonData); err != nil {
 			return nil, fmt.Errorf("erro ao analisar JSON do segredo: %w", err)
 		}
-		// return jsonData, nil
-		return []byte(secretValue), nil
+		return jsonData, nil
 	default:
 		return secretValue, nil
 	}
