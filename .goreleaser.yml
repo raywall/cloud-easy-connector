@@ -1,0 +1,12 @@
+project_name: cloud-easy-connector
+release:
+  github:
+    owner: raywall
+    name: cloud-easy-connector
+  name_template: "{{ .Tag }}"
+  draft: false
+  prerelease: false
+  goarch:
+    - amd64
+builds:
+  - ldflags: -X main.version={{.Version}}
