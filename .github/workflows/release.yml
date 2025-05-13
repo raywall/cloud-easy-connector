@@ -22,8 +22,8 @@ jobs:
 
       - name: Set Git Identity
         run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
+          git config --global user.name "Raywall Malheiros"
+          git config --global user.email "raywall.malheiros@gmail.com"
 
       - name: Get Previous Tag
         id: previous_tag
