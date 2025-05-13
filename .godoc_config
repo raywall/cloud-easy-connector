@@ -1,0 +1,24 @@
+{
+	"PkgHandler": {
+		"Pattern": "/cloud-easy-connector",
+		"StripPrefix": "/cloud-easy-connector",
+		"Include": [
+			"/src/github.com/raywall/cloud-easy-connector/cmd",
+			"/src/github.com/raywall/cloud-easy-connector/internal",
+			"/src/github.com/raywall/cloud-easy-connector/pkg"
+		],
+		"Exclude": [
+			"/src/github.com/raywall/cloud-easy-connector/sam",
+			"/src/github.com/raywall/cloud-easy-connector/.aws-sam",
+			"/src/github.com/raywall/cloud-easy-connector/*.sh"
+		],
+		"IgnoredSuffixes": [
+			"iface"
+		]
+	},
+	"Github": {
+		"Tag": "main",
+		"Repo": "/raywall/cloud-easy-connector",
+		"UseGithub": true
+	}
+}
