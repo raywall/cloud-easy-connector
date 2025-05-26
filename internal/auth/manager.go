@@ -168,6 +168,7 @@ func (tm *TokenManager) RefreshToken() error {
 	if err != nil {
 		return err
 	}
+ req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	// Fazer a requisição
 	resp, err := tm.client.Do(req)
