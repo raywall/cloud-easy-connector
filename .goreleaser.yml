@@ -22,9 +22,6 @@ builds:
   - linux
   - windows
 
-  ldflags:
-  - X main.version={{.Version}}
-
   env:
   - CGO_ENABLED=0
 
