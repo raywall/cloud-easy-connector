@@ -5,7 +5,7 @@ project_name: cloud-easy-connector
 
 builds:
 - id: cloud-easy-connector
-  main: ./cmd/main
+  main: ./cmd
   binary: cloud-easy-connector
   env:
   - CGO_ENABLED=0
