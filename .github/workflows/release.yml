@@ -51,6 +51,6 @@ jobs:
       with:
         distribution: goreleaser
         version: 'latest'
-        args: release --release-notes="Release ${{ steps.create_tag.outputs.new_tag }}"
+        args: release --clean
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
