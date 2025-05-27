@@ -4,5 +4,28 @@ release:
   github:
     owner: raywall
     name: cloud-easy-connector
-  name_template: "{{ .Tag }}"
+
   draft: false
+  make_latest: true
+  name_template: "cloud-easy-connector-{{ .Tag }}"
+
+builds:
+  main: ./cmd/main
+
+  goarch:
+  - amd64
+  - arm
+  - arm64
+
+  goos:
+  - darwin
+  - linux
+  - windows
+
+  ldflags:
+  - X main.version={{.Version}}
+
+  env:
+  - CGO_ENABLED=0
+
+  tool: "go1.24.1"
