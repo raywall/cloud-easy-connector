@@ -7,6 +7,6 @@ release:
   draft: false
   prerelease: false
   goarch:
-    - amd64
+  - amd64
 builds:
-  - ldflags: -X main.version={{.Version}}
+- ldflags: -X main.version={{.Version}}
