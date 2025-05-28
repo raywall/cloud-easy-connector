@@ -18,3 +18,4 @@ type AuthRequest tm.AuthRequest
 func NewAutoManagedToken(apiURL string, authRequest AuthRequest, certSkipVerify bool) AutoManagedToken {
 	return tm.NewManagedToken(apiURL, tm.AuthRequest(authRequest), certSkipVerify)
 }
+
