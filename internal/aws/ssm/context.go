@@ -40,5 +40,3 @@ func (ctx *SSMCloudContext) GetValue() (interface{}, error) {
 	}
 	return *result.Parameter.Value, nil
 }
-
-

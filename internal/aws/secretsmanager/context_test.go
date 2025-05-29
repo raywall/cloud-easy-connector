@@ -1,6 +1,7 @@
 package secretsmanager
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -66,8 +67,11 @@ func TestSecretsManagerCloudContext_GetValue(t *testing.T) {
 		// Verificar resultados
 		assert.NoError(t, err)
 
-		jsonResult, ok := result.(map[string]interface{})
-		assert.True(t, ok)
+		jsonResult := make(map[string]interface{})
+		err = json.Unmarshal(result.([]byte), &jsonResult)
+
+		assert.NoError(t, err)
+
 		assert.Equal(t, "admin", jsonResult["username"])
 		assert.Equal(t, "secret123", jsonResult["password"])
 	})

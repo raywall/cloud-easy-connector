@@ -1,16 +1,17 @@
 package datadog
 
 import (
-    "log"
-    "github.com/DataDog/datadog-go/v5/statsd"
+	"fmt"
+
+	"github.com/DataDog/datadog-go/v5/statsd"
 )
 
 // DatadogClient is a interface that represents a Datadog StatsD client
-type DatadogClient interface{
+type DatadogClient interface {
 	NewDatadogTag(name, value string) DatadogTag
 	Increment(metric string, value int, tags DatadogTags) error
 	Gauge(metric string, value float64, tags DatadogTags) error
-	Histogram(metric, suffix string, value float64, DatadogTags) error
+	Histogram(metric, suffix string, value float64, tags DatadogTags) error
 	Distribution(metric string, value float64, tags DatadogTags) error
 	Event(title, value string, tags DatadogTags) error
 	Close() error
@@ -18,7 +19,7 @@ type DatadogClient interface{
 
 // DatadogTag is a structure that represents a Datadog metric Tag
 type DatadogTag struct {
-	Name string `json:"name"`
+	Name  string      `json:"name"`
 	Value interface{} `json:"value"`
 }
 
@@ -35,30 +36,30 @@ func New(metric_prefix, server_host string, server_port int) (DatadogClient, err
 	prefix := ""
 
 	if metric_prefix != "" {
-		prefix + fmt.Sprintf("%s.", metric_prefix)
+		prefix = fmt.Sprintf("%s.", metric_prefix)
 	}
 
-	if client, err : statsd.New(fmt.Sprintf("%s:%d", server_host, server_port), statsd.WithNamespace(prefix)); err != nil {
+	if _client, err := statsd.New(fmt.Sprintf("%s:%d", server_host, server_port), statsd.WithNamespace(prefix)); err != nil {
 		return nil, fmt.Errorf("failed to create a StatsD client for DD: %v", err)
 
 	} else {
 		return &datadogClient{
-			client: &client,
-		}
+			client: _client,
+		}, nil
 	}
 }
 
 // NewDatadogTag creates a new Datadog metric Tag object
-type (dd *datadogClient) NewDatadogTag(name, value string) DatadogTag {
+func (dd *datadogClient) NewDatadogTag(name, value string) DatadogTag {
 	return DatadogTag{
-		Name: name,
+		Name:  name,
 		Value: value,
 	}
 }
 
 // Increment helps to increment a value in a Datadog custom metric
 func (dd *datadogClient) Increment(metric string, value int, tags DatadogTags) error {
-	err = client.Incr(fmt.Sprintf("%s.count", metric), tags.ToStringArray(), 1.0)
+	err := dd.client.Incr(fmt.Sprintf("%s.count", metric), tags.ToStringArray(), 1.0)
 	if err != nil {
 		return fmt.Errorf("failed to increment the counter: %v", err)
 	}
@@ -66,9 +67,9 @@ func (dd *datadogClient) Increment(metric string, value int, tags DatadogTags) e
 	return nil
 }
 
-// Gauge defines a static value in a Datadog custom metric 
+// Gauge defines a static value in a Datadog custom metric
 func (dd *datadogClient) Gauge(metric string, value float64, tags DatadogTags) error {
-	err = client.Gauge("memory.usage", value, tags.ToStringArray(), 1.0)
+	err := dd.client.Gauge("memory.usage", value, tags.ToStringArray(), 1.0)
 	if err != nil {
 		fmt.Errorf("failed to register the gauge value: %v", err)
 	}
@@ -78,7 +79,7 @@ func (dd *datadogClient) Gauge(metric string, value float64, tags DatadogTags) e
 
 // Histogram defines a histogram value (e.g. latency)
 func (dd *datadogClient) Histogram(metric, suffix string, value float64, tags DatadogTags) error {
-	err = client.Histogram(fmt.Sprintf("%s.%s", metric, suffix), value, tags.ToStringArray(), 1.0)
+	err := dd.client.Histogram(fmt.Sprintf("%s.%s", metric, suffix), value, tags.ToStringArray(), 1.0)
 	if err != nil {
 		return fmt.Errorf("failed to register the histogram value: %v", err)
 	}
@@ -88,7 +89,7 @@ func (dd *datadogClient) Histogram(metric, suffix string, value float64, tags Da
 
 // Distribution sends a distribution for percentis analisys
 func (dd *datadogClient) Distribution(metric string, value float64, tags DatadogTags) error {
-	err = client.Distribution(fmt.Sprintf("%s.time", metric), value, tags.ToStringArray(), 1.0)
+	err := dd.client.Distribution(fmt.Sprintf("%s.time", metric), value, tags.ToStringArray(), 1.0)
 	if err != nil {
 		return fmt.Errorf("failed to register the distribution value: %v", err)
 	}
@@ -98,7 +99,7 @@ func (dd *datadogClient) Distribution(metric string, value float64, tags Datadog
 
 // Event helps to register an event
 func (dd *datadogClient) Event(title, value string, tags DatadogTags) error {
-	err = client.Event(&statsd.Event{
+	err := dd.client.Event(&statsd.Event{
 		Title: title,
 		Text:  value,
 		Tags:  tags.ToStringArray(),
@@ -119,8 +120,8 @@ func (dd *datadogClient) Close() error {
 func (tags *DatadogTags) ToStringArray() []string {
 	result := make([]string, 0)
 
-	for _, tag := range tags {
-		result = append(tags, fmt.Sprintf("%s:%v", tag.Name, tag.Value))
+	for _, tag := range *tags {
+		result = append(result, fmt.Sprintf("%s:%v", tag.Name, tag.Value))
 	}
 
 	return result
