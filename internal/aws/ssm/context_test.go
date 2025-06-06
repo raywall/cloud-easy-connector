@@ -27,9 +27,7 @@ var (
 func loadDefaultVariables() {
 	mockSSM = new(mockSSMClient)
 	ctx = &SSMCloudContext{
-		svc:            mockSSM,
-		paramName:      "/test/param",
-		withDecryption: true,
+		svc: mockSSM,
 	}
 }
 
@@ -46,7 +44,7 @@ func TestSSMCloudContext_GetValue(t *testing.T) {
 		}, nil)
 
 		// executar GetValue
-		result, err := ctx.GetValue()
+		result, err := ctx.GetValue("/test/param", true)
 
 		// Verificar resultados
 		assert.NoError(t, err)

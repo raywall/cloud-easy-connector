@@ -10,57 +10,46 @@ import (
 	sm "github.com/aws/aws-sdk-go/service/secretsmanager"
 )
 
-type SecretType string
-
-const (
-	TextSecret SecretType = "text"
-	JSONSecret SecretType = "json"
-)
-
 type SecretsManagerResource interface {
 	GetSecretValue(input *sm.GetSecretValueInput) (*sm.GetSecretValueOutput, error)
 }
 
 // SecretsManagerCloudContext implementa CloudContext para Secrets Manager
 type SecretsManagerCloudContext struct {
-	svc        SecretsManagerResource
-	secretName string
-	secretType SecretType
+	svc SecretsManagerResource
 }
 
-func NewSecretsManagerContext(sess *session.Session, secretName string, secretType SecretType) *SecretsManagerCloudContext {
+func NewSecretsManagerContext(sess *session.Session) *SecretsManagerCloudContext {
 	return &SecretsManagerCloudContext{
-		svc:        sm.New(sess),
-		secretName: secretName,
-		secretType: secretType,
+		svc: sm.New(sess),
 	}
 }
 
 // GetValue obtém e processa o segredo do Secrets Manager
-func (ctx *SecretsManagerCloudContext) GetValue() (interface{}, error) {
+func (ctx *SecretsManagerCloudContext) GetValue(secretName, secretType string) (interface{}, error) {
 	input := &sm.GetSecretValueInput{
-		SecretId: aws.String(ctx.secretName),
+		SecretId: aws.String(secretName),
 	}
 
 	result, err := ctx.svc.GetSecretValue(input)
 	if err != nil {
-		return nil, fmt.Errorf("erro ao obter segredo: %w", err)
+		return nil, fmt.Errorf("error when obtaining secret: %w", err)
 	}
 
 	var secretValue string
 	if result.SecretString != nil {
 		secretValue = *result.SecretString
 	} else {
-		return nil, errors.New("segredo binário não é suportado")
+		return nil, errors.New("binary secret is not supported")
 	}
 
-	switch ctx.secretType {
-	case TextSecret:
+	switch secretType {
+	case "text":
 		return secretValue, nil
-	case JSONSecret:
+	case "json":
 		var jsonData map[string]interface{}
 		if err := json.Unmarshal([]byte(secretValue), &jsonData); err != nil {
-			return nil, fmt.Errorf("erro ao analisar JSON do segredo: %w", err)
+			return nil, fmt.Errorf("error when analyzing secret JSON: %w", err)
 		}
 		return []byte(secretValue), nil
 	default:

@@ -19,59 +19,55 @@ type S3Resource interface {
 
 // S3CloudContext implements CloudContext para S3
 type S3CloudContext struct {
-	svc    S3Resource
-	bucket string
-	key    string
+	svc S3Resource
 }
 
-func NewS3Context(sess *session.Session, bucket, key string) *S3CloudContext {
+func NewS3Context(sess *session.Session) *S3CloudContext {
 	return &S3CloudContext{
-		svc:    s3bucket.New(sess),
-		bucket: bucket,
-		key:    key,
+		svc: s3bucket.New(sess),
 	}
 }
 
 // GetValue obtém o conteúdo do arquivo S3 e o converte para o formato apropriado
-func (ctx *S3CloudContext) GetValue() (interface{}, error) {
+func (ctx *S3CloudContext) GetValue(bucketName, keyName string) (interface{}, error) {
 	input := &s3bucket.GetObjectInput{
-		Bucket: aws.String(ctx.bucket),
-		Key:    aws.String(ctx.key),
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(keyName),
 	}
 
 	result, err := ctx.svc.GetObject(input)
 	if err != nil {
-		return nil, fmt.Errorf("erro ao obter objeto do S3: %w", err)
+		return nil, fmt.Errorf("error when obtaining S3 object: %w", err)
 	}
 	defer result.Body.Close()
 
 	// Ler o conteúdo do arquivo
 	bodyBytes, err := io.ReadAll(result.Body)
 	if err != nil {
-		return nil, fmt.Errorf("erro ao ler conteúdo do arquivo: %w", err)
+		return nil, fmt.Errorf("error reading file content: %w", err)
 	}
 	content := string(bodyBytes)
 
 	// Determinar o tipo de arquivo a processar de acordo
-	if strings.HasSuffix(ctx.key, ".json") {
+	if strings.HasSuffix(keyName, ".json") {
 		var jsonData map[string]interface{}
 		if err := json.Unmarshal(bodyBytes, &jsonData); err != nil {
-			return nil, fmt.Errorf("erro ao analisar JSON: %w", err)
+			return nil, fmt.Errorf("error when analyzing JSON: %w", err)
 		}
 		return jsonData, nil
 
-	} else if strings.HasSuffix(ctx.key, ".yaml") || strings.HasSuffix(ctx.key, ".yml") {
+	} else if strings.HasSuffix(keyName, ".yaml") || strings.HasSuffix(keyName, ".yml") {
 		var yamlData map[string]interface{}
 		if err := yaml.Unmarshal(bodyBytes, &yamlData); err != nil {
-			return nil, fmt.Errorf("erro ao analisar YAML: %w", err)
+			return nil, fmt.Errorf("error when analyzing yaml: %w", err)
 		}
 		return yamlData, nil
 
-	} else if strings.HasSuffix(ctx.key, ".csv") {
+	} else if strings.HasSuffix(keyName, ".csv") {
 		reader := csv.NewReader(strings.NewReader(content))
 		records, err := reader.ReadAll()
 		if err != nil {
-			return nil, fmt.Errorf("erro ao analisar CSV: %w", err)
+			return nil, fmt.Errorf("error when analyzing CSV: %w", err)
 		}
 
 		// Converter CSV para mapa

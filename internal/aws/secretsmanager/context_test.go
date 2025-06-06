@@ -25,18 +25,16 @@ var (
 	ctx                *SecretsManagerCloudContext
 )
 
-func loadDefaultVariables(secretType SecretType) {
+func loadDefaultVariables() {
 	mockSecretsManager = new(mockSecretsManagerClient)
 	ctx = &SecretsManagerCloudContext{
-		svc:        mockSecretsManager,
-		secretName: "test-secret",
-		secretType: secretType,
+		svc: mockSecretsManager,
 	}
 }
 
 func TestSecretsManagerCloudContext_GetValue(t *testing.T) {
 	t.Run("Get text secret", func(t *testing.T) {
-		loadDefaultVariables(TextSecret)
+		loadDefaultVariables()
 
 		// Preparar mock para Secrets Manager com segredo de texto
 		secretValue := "test-secret-value"
@@ -45,7 +43,7 @@ func TestSecretsManagerCloudContext_GetValue(t *testing.T) {
 		}, nil)
 
 		// Executar GetValue
-		result, err := ctx.GetValue()
+		result, err := ctx.GetValue("test-secret", "text")
 
 		// Verificar resultados
 		assert.NoError(t, err)
@@ -53,7 +51,7 @@ func TestSecretsManagerCloudContext_GetValue(t *testing.T) {
 	})
 
 	t.Run("Get JSON secret", func(t *testing.T) {
-		loadDefaultVariables(JSONSecret)
+		loadDefaultVariables()
 
 		// Preparar mock para Secrets Manager com segredo de texto
 		secretJSON := `{"username": "admin", "password": "secret123"}`
@@ -62,7 +60,7 @@ func TestSecretsManagerCloudContext_GetValue(t *testing.T) {
 		}, nil)
 
 		// Executar GetValue
-		result, err := ctx.GetValue()
+		result, err := ctx.GetValue("test-secret", "json")
 
 		// Verificar resultados
 		assert.NoError(t, err)

@@ -24,18 +24,16 @@ var (
 	ctx    *S3CloudContext
 )
 
-func loadDefaultVariables(filename string) {
+func loadDefaultVariables() {
 	mockS3 = new(mockS3Client)
 	ctx = &S3CloudContext{
-		svc:    mockS3,
-		bucket: "test-bucket",
-		key:    filename,
+		svc: mockS3,
 	}
 }
 
 func TestS3CloudContext_GetValue(t *testing.T) {
 	t.Run("Get JSON object", func(t *testing.T) {
-		loadDefaultVariables("test-file.json")
+		loadDefaultVariables()
 
 		// Preparar mock para S3 com arquivo JSON
 		jsonContent := `{"name": "test", "value": 123}`
@@ -44,7 +42,7 @@ func TestS3CloudContext_GetValue(t *testing.T) {
 		}, nil)
 
 		// Executar GetValue
-		result, err := ctx.GetValue()
+		result, err := ctx.GetValue("test-bucket", "test-file.json")
 
 		// Verificar resultados
 		assert.NoError(t, err)
@@ -56,7 +54,7 @@ func TestS3CloudContext_GetValue(t *testing.T) {
 	})
 
 	t.Run("Get YAML object", func(t *testing.T) {
-		loadDefaultVariables("test-file.yaml")
+		loadDefaultVariables()
 
 		// Preparar mock para S3 com arquivo YAML
 		yamlContent := `name: test
@@ -70,7 +68,7 @@ list:
 		}, nil)
 
 		// Executar GetValue
-		result, err := ctx.GetValue()
+		result, err := ctx.GetValue("test-bucket", "test-file.yaml")
 
 		// Verificar resultados
 		assert.NoError(t, err)
@@ -82,7 +80,7 @@ list:
 	})
 
 	t.Run("Get CSV object", func(t *testing.T) {
-		loadDefaultVariables("test-file.csv")
+		loadDefaultVariables()
 
 		// Preparar mock para S3 com arquivo CSV
 		csvContent := `id,name,age
@@ -94,7 +92,7 @@ list:
 		}, nil)
 
 		// Executar GetValue
-		result, err := ctx.GetValue()
+		result, err := ctx.GetValue("test-bucket", "test-file.csv")
 
 		// Verificar resultados
 		assert.NoError(t, err)
@@ -109,7 +107,7 @@ list:
 	})
 
 	t.Run("Get Text object", func(t *testing.T) {
-		loadDefaultVariables("test-file.txt")
+		loadDefaultVariables()
 
 		// Preparar mock para S3 com arquivo de texto
 		textContent := "This is a plain text file."
@@ -118,7 +116,7 @@ list:
 		}, nil)
 
 		// Executar GetValue
-		result, err := ctx.GetValue()
+		result, err := ctx.GetValue("test-bucket", "test-file.txt")
 
 		// Verificar resultados
 		assert.NoError(t, err)

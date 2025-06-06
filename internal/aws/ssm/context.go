@@ -14,29 +14,25 @@ type SSMResource interface {
 
 // SSMCloudContext implementa CloudContext para SSM Parameter Store
 type SSMCloudContext struct {
-	svc            SSMResource
-	paramName      string
-	withDecryption bool
+	svc SSMResource
 }
 
-func NewSSMContext(sess *session.Session, paramName string, withDecryption bool) *SSMCloudContext {
+func NewSSMContext(sess *session.Session) *SSMCloudContext {
 	return &SSMCloudContext{
-		svc:            ssmParam.New(sess),
-		paramName:      paramName,
-		withDecryption: withDecryption,
+		svc: ssmParam.New(sess),
 	}
 }
 
 // GetValue obtém o valor do parâmetro SSM
-func (ctx *SSMCloudContext) GetValue() (interface{}, error) {
+func (ctx *SSMCloudContext) GetValue(parameterName string, withDecryption bool) (interface{}, error) {
 	input := &ssmParam.GetParameterInput{
-		Name:           aws.String(ctx.paramName),
-		WithDecryption: aws.Bool(ctx.withDecryption),
+		Name:           aws.String(parameterName),
+		WithDecryption: aws.Bool(withDecryption),
 	}
 
 	result, err := ctx.svc.GetParameter(input)
 	if err != nil {
-		return nil, fmt.Errorf("erro ao obter parâmetros SSM: %w", err)
+		return nil, fmt.Errorf("error when obtaining SSM parameters: %w", err)
 	}
 	return *result.Parameter.Value, nil
 }
